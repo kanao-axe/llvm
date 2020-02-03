@@ -1473,6 +1473,7 @@ static void commuteShuffle(SDValue &N1, SDValue &N2, MutableArrayRef<int> M) {
 
 SDValue SelectionDAG::getVectorShuffle(EVT VT, const SDLoc &dl, SDValue N1,
                                        SDValue N2, ArrayRef<int> Mask) {
+DEBUG_WITH_TYPE("axe", dbgs() << "\nSelectionDAG::getVectorShuffle\n");
   assert(VT.getVectorNumElements() == Mask.size() &&
            "Must have the same number of vector elements as mask elements!");
   assert(VT == N1.getValueType() && VT == N2.getValueType() &&
@@ -3579,6 +3580,7 @@ static SDValue FoldCONCAT_VECTORS(const SDLoc &DL, EVT VT,
 
 /// Gets or creates the specified node.
 SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT) {
+DEBUG_WITH_TYPE("axe", dbgs() << "\nSelectionDAG::getNode: Opcode " << Opcode << '\n');
   FoldingSetNodeID ID;
   AddNodeIDNode(ID, Opcode, getVTList(VT), None);
   void *IP = nullptr;
@@ -3597,6 +3599,7 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT) {
 
 SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
                               SDValue Operand, const SDNodeFlags Flags) {
+DEBUG_WITH_TYPE("axe", dbgs() << "\nSelectionDAG::getNode (2): Opcode " << Opcode << '\n');
   // Constant fold unary operations with an integer constant operand. Even
   // opaque constant will be folded, because the folding of unary operations
   // doesn't create new constants with different values. Nevertheless, the
@@ -4238,6 +4241,7 @@ SDValue SelectionDAG::FoldConstantVectorArithmetic(unsigned Opcode,
 
 SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
                               SDValue N1, SDValue N2, const SDNodeFlags Flags) {
+DEBUG_WITH_TYPE("axe", dbgs() << "\nSelectionDAG::getNode (3): Opcode " << Opcode << '\n');
   ConstantSDNode *N1C = dyn_cast<ConstantSDNode>(N1);
   ConstantSDNode *N2C = dyn_cast<ConstantSDNode>(N2);
   ConstantFPSDNode *N1CFP = dyn_cast<ConstantFPSDNode>(N1);
@@ -6022,6 +6026,7 @@ SDValue SelectionDAG::getStore(SDValue Chain, const SDLoc &dl, SDValue Val,
 
 SDValue SelectionDAG::getStore(SDValue Chain, const SDLoc &dl, SDValue Val,
                                SDValue Ptr, MachineMemOperand *MMO) {
+DEBUG_WITH_TYPE("axe", dbgs() << "\nSelectionDAG::getStore\n");
   assert(Chain.getValueType() == MVT::Other &&
         "Invalid chain type");
   EVT VT = Val.getValueType();
@@ -6075,6 +6080,7 @@ SDValue SelectionDAG::getTruncStore(SDValue Chain, const SDLoc &dl, SDValue Val,
 SDValue SelectionDAG::getTruncStore(SDValue Chain, const SDLoc &dl, SDValue Val,
                                     SDValue Ptr, EVT SVT,
                                     MachineMemOperand *MMO) {
+DEBUG_WITH_TYPE("axe", dbgs() << "\nSelectionDAG::getTruncStore\n");
   EVT VT = Val.getValueType();
 
   assert(Chain.getValueType() == MVT::Other &&
@@ -6120,6 +6126,7 @@ SDValue SelectionDAG::getTruncStore(SDValue Chain, const SDLoc &dl, SDValue Val,
 SDValue SelectionDAG::getIndexedStore(SDValue OrigStore, const SDLoc &dl,
                                       SDValue Base, SDValue Offset,
                                       ISD::MemIndexedMode AM) {
+DEBUG_WITH_TYPE("axe", dbgs() << "\nSelectionDAG::getIndexedStore\n");
   StoreSDNode *ST = cast<StoreSDNode>(OrigStore);
   assert(ST->getOffset().isUndef() && "Store is already a indexed store!");
   SDVTList VTs = getVTList(Base.getValueType(), MVT::Other);
@@ -6149,6 +6156,7 @@ SDValue SelectionDAG::getMaskedLoad(EVT VT, const SDLoc &dl, SDValue Chain,
                                     SDValue Ptr, SDValue Mask, SDValue Src0,
                                     EVT MemVT, MachineMemOperand *MMO,
                                     ISD::LoadExtType ExtTy, bool isExpanding) {
+DEBUG_WITH_TYPE("axe", dbgs() << "\nSelectionDAG::getMaskedLoad\n");
   SDVTList VTs = getVTList(VT, MVT::Other);
   SDValue Ops[] = { Chain, Ptr, Mask, Src0 };
   FoldingSetNodeID ID;
@@ -6177,6 +6185,7 @@ SDValue SelectionDAG::getMaskedStore(SDValue Chain, const SDLoc &dl,
                                      SDValue Val, SDValue Ptr, SDValue Mask,
                                      EVT MemVT, MachineMemOperand *MMO,
                                      bool IsTruncating, bool IsCompressing) {
+DEBUG_WITH_TYPE("axe", dbgs() << "\nSelectionDAG::getMaskedStore\n");
   assert(Chain.getValueType() == MVT::Other &&
         "Invalid chain type");
   EVT VT = Val.getValueType();
@@ -6207,6 +6216,7 @@ SDValue SelectionDAG::getMaskedStore(SDValue Chain, const SDLoc &dl,
 SDValue SelectionDAG::getMaskedGather(SDVTList VTs, EVT VT, const SDLoc &dl,
                                       ArrayRef<SDValue> Ops,
                                       MachineMemOperand *MMO) {
+DEBUG_WITH_TYPE("axe", dbgs() << "\nSelectionDAG::getMaskedGather\n");
   assert(Ops.size() == 5 && "Incompatible number of operands");
 
   FoldingSetNodeID ID;
@@ -6244,6 +6254,7 @@ SDValue SelectionDAG::getMaskedGather(SDVTList VTs, EVT VT, const SDLoc &dl,
 SDValue SelectionDAG::getMaskedScatter(SDVTList VTs, EVT VT, const SDLoc &dl,
                                        ArrayRef<SDValue> Ops,
                                        MachineMemOperand *MMO) {
+DEBUG_WITH_TYPE("axe", dbgs() << "\nSelectionDAG::getMaskedScatter\n");
   assert(Ops.size() == 5 && "Incompatible number of operands");
 
   FoldingSetNodeID ID;
@@ -6299,6 +6310,7 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
 
 SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
                               ArrayRef<SDValue> Ops, const SDNodeFlags Flags) {
+DEBUG_WITH_TYPE("axe", dbgs() << "\nSelectionDAG::getNode (4): Opcode " << Opcode << '\n');
   unsigned NumOps = Ops.size();
   switch (NumOps) {
   case 0: return getNode(Opcode, DL, VT);
@@ -6365,6 +6377,7 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL,
 
 SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, SDVTList VTList,
                               ArrayRef<SDValue> Ops) {
+DEBUG_WITH_TYPE("axe", dbgs() << "\nSelectionDAG::getNode (5): Opcode " << Opcode << '\n');
   if (VTList.NumVTs == 1)
     return getNode(Opcode, DL, VTList.VTs[0], Ops);
 

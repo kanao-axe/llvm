@@ -2027,7 +2027,7 @@ let DecoderNamespace = "COP3_" in {
              ISA_MAXIS2;
 }
 
-//  def SYNC : MMRel, StdMMR6Rel, SYNC_FT<"sync">, SYNC_FM, ISA_MAXIS2;
+  def SYNC : MMRel, StdMMR6Rel, SYNC_FT<"sync">, SYNC_FM, ISA_MAXIS2; // axe
   def SYNCI : MMRel, StdMMR6Rel, SYNCI_FT<"synci">, SYNCI_FM, ISA_MAXIS32R2;
 }
 
@@ -2118,6 +2118,8 @@ def BLTZ    : MMRel, CBranchZero<"bltz", brtarget, setlt, GPR32Opnd>,
 def BLTZL   : MMRel, CBranchZeroLikely<"bltzl", brtarget, GPR32Opnd>,
               BGEZ_FM<1, 2>, ISA_MAXIS2_NOT_32R6_64R6;
 */
+def B       : UncondBranch<BEQ, brtarget>,
+              AdditionalRequires<[NotInMicroMaxis]>; // axe, from lib/Target/Mips/MipsInstrInfo.td
 
 def JAL  : MMRel, JumpLink<"jal", calltarget>, FJ<0x4, 0x1f>;
 let AdditionalPredicates = [NotInMicroMaxis] in {
@@ -2321,7 +2323,7 @@ class Barrier<string asmstr, InstrItinClass itin = NoItinerary> :
   InstSE<(outs), (ins), asmstr, [], itin, FrmOther, asmstr>;
 
 def NOP : MMRel, StdMMR6Rel, Barrier<"nop", II_NOP>, BARRIER_FM<0>;
-def SYNC : MMRel, StdMMR6Rel, Barrier<"sync", II_SYNC>, BARRIER_FM<1>;
+// def SYNC : MMRel, StdMMR6Rel, Barrier<"sync", II_SYNC>, BARRIER_FM<1>; axe
 def WI : MMRel, StdMMR6Rel, Barrier<"wi", II_WI>, BARRIER_FM<2>;
 def ERT : MMRel, StdMMR6Rel, Barrier<"ert", II_ERT>, BARRIER_FM<4>;
 //def EHB : MMRel, Barrier<"ehb", II_EHB>, BARRIER_FM<3>;
@@ -2671,10 +2673,10 @@ let AdditionalPredicates = [NotInMicroMaxis] in {
                      ISA_MAXIS32R2;
 }
 //def : MaxisInstAlias<"sdbbp", (SDBBP 0)>, ISA_MAXIS32_NOT_32R6_64R6;
-/*
+
 def : MaxisInstAlias<"sync",
-                    (SYNC 0), 1>, ISA_MAXIS2;
-*/
+                    (SYNC 0), 1>, ISA_MAXIS2; // axe
+
 def : MaxisInstAlias<"mulo $rs, $rt",
                     (MULOMacro GPR32Opnd:$rs, GPR32Opnd:$rs, GPR32Opnd:$rt), 0>,
                     ISA_MAXIS1_NOT_32R6_64R6;
@@ -2896,10 +2898,10 @@ def : MaxisPat<(mul GPR32:$lhs, GPR32:$rhs),
       ISA_MAXIS1_NOT_32R6_64R6;
 
 // SYNC
-/*
+
 def : MaxisPat<(MaxisSync (i32 immz)),
-              (SYNC 0)>, ISA_MAXIS2;
-*/
+              (SYNC 0)>, ISA_MAXIS2; // axe
+
 // Call
 def : MaxisPat<(MaxisJmpLink (i32 texternalsym:$dst)),
               (JAL texternalsym:$dst)>;

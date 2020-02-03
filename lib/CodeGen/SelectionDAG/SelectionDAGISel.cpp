@@ -645,6 +645,7 @@ static void reportFastISelFailure(MachineFunction &MF,
 void SelectionDAGISel::SelectBasicBlock(BasicBlock::const_iterator Begin,
                                         BasicBlock::const_iterator End,
                                         bool &HadTailCall) {
+DEBUG_WITH_TYPE("axe", dbgs() << "\nSelectionDAGISel::SelectBasicBlock\n");
   // Allow creating illegal types during DAG building for the basic block.
   CurDAG->NewNodesMustHaveLegalTypes = false;
 
@@ -705,6 +706,7 @@ void SelectionDAGISel::ComputeLiveOutVRegInfo() {
 }
 
 void SelectionDAGISel::CodeGenAndEmitDAG() {
+DEBUG_WITH_TYPE("axe", dbgs() << "\nSelectionDAGISel::CodeGenAndEmitDAG\n");
   StringRef GroupName = "sdag";
   StringRef GroupDescription = "Instruction Selection and Scheduling";
   std::string BlockName;
@@ -913,6 +915,7 @@ void SelectionDAGISel::CodeGenAndEmitDAG() {
 
   // Free the SelectionDAG state, now that we're finished with it.
   CurDAG->clear();
+DEBUG_WITH_TYPE("axe", dbgs() << "\nSelectionDAGISel::CodeGenAndEmitDAG: done\n");
 }
 
 namespace {
@@ -1377,6 +1380,7 @@ static void preassignSwiftErrorRegs(const TargetLowering *TLI,
 }
 
 void SelectionDAGISel::SelectAllBasicBlocks(const Function &Fn) {
+DEBUG_WITH_TYPE("axe", dbgs() << "\nSelectionDAGISel::SelectAllBasicBlocks\n");
   FastISelFailed = false;
   // Initialize the Fast-ISel state, if needed.
   FastISel *FastIS = nullptr;
@@ -1728,6 +1732,7 @@ FindSplitPointForStackProtector(MachineBasicBlock *BB) {
 
 void
 SelectionDAGISel::FinishBasicBlock() {
+DEBUG_WITH_TYPE("axe", dbgs() << "\nSelectionDAGISel::FinishBasicBlock\n");
   DEBUG(dbgs() << "Total amount of phi nodes to update: "
                << FuncInfo->PHINodesToUpdate.size() << "\n";
         for (unsigned i = 0, e = FuncInfo->PHINodesToUpdate.size(); i != e; ++i)
@@ -2655,6 +2660,7 @@ CheckChildSame(const unsigned char *MatcherTable, unsigned &MatcherIndex,
 LLVM_ATTRIBUTE_ALWAYS_INLINE static inline bool
 CheckPatternPredicate(const unsigned char *MatcherTable, unsigned &MatcherIndex,
                       const SelectionDAGISel &SDISel) {
+DEBUG_WITH_TYPE("axe", dbgs() << "  calling SDISel.CheckPatternPredicate, PredNo: " << (unsigned)MatcherTable[MatcherIndex] << '\n');
   return SDISel.CheckPatternPredicate(MatcherTable[MatcherIndex++]);
 }
 
@@ -2772,29 +2778,36 @@ static unsigned IsPredicateKnownToFail(const unsigned char *Table,
     Result = false;
     return Index-1;  // Could not evaluate this predicate.
   case SelectionDAGISel::OPC_CheckSame:
+DEBUG_WITH_TYPE("axe", dbgs() << "  IsPredicateKnownToFail: line " << __LINE__  << '\n');
     Result = !::CheckSame(Table, Index, N, RecordedNodes);
     return Index;
   case SelectionDAGISel::OPC_CheckChild0Same:
   case SelectionDAGISel::OPC_CheckChild1Same:
   case SelectionDAGISel::OPC_CheckChild2Same:
   case SelectionDAGISel::OPC_CheckChild3Same:
+DEBUG_WITH_TYPE("axe", dbgs() << "  IsPredicateKnownToFail: line " << __LINE__  << '\n');
     Result = !::CheckChildSame(Table, Index, N, RecordedNodes,
                         Table[Index-1] - SelectionDAGISel::OPC_CheckChild0Same);
     return Index;
   case SelectionDAGISel::OPC_CheckPatternPredicate:
+DEBUG_WITH_TYPE("axe", dbgs() << "  IsPredicateKnownToFail: line " << __LINE__  << ", Index: " << Index << '\n');
     Result = !::CheckPatternPredicate(Table, Index, SDISel);
     return Index;
   case SelectionDAGISel::OPC_CheckPredicate:
+DEBUG_WITH_TYPE("axe", dbgs() << "  IsPredicateKnownToFail: line " << __LINE__  << '\n');
     Result = !::CheckNodePredicate(Table, Index, SDISel, N.getNode());
     return Index;
   case SelectionDAGISel::OPC_CheckOpcode:
+DEBUG_WITH_TYPE("axe", dbgs() << "  IsPredicateKnownToFail: line " << __LINE__  << '\n');
     Result = !::CheckOpcode(Table, Index, N.getNode());
     return Index;
   case SelectionDAGISel::OPC_CheckType:
+DEBUG_WITH_TYPE("axe", dbgs() << "  IsPredicateKnownToFail: line " << __LINE__  << '\n');
     Result = !::CheckType(Table, Index, N, SDISel.TLI,
                           SDISel.CurDAG->getDataLayout());
     return Index;
   case SelectionDAGISel::OPC_CheckTypeRes: {
+DEBUG_WITH_TYPE("axe", dbgs() << "  IsPredicateKnownToFail: line " << __LINE__  << '\n');
     unsigned Res = Table[Index++];
     Result = !::CheckType(Table, Index, N.getValue(Res), SDISel.TLI,
                           SDISel.CurDAG->getDataLayout());
@@ -2808,18 +2821,22 @@ static unsigned IsPredicateKnownToFail(const unsigned char *Table,
   case SelectionDAGISel::OPC_CheckChild5Type:
   case SelectionDAGISel::OPC_CheckChild6Type:
   case SelectionDAGISel::OPC_CheckChild7Type:
+DEBUG_WITH_TYPE("axe", dbgs() << "  IsPredicateKnownToFail: line " << __LINE__  << '\n');
     Result = !::CheckChildType(
                  Table, Index, N, SDISel.TLI, SDISel.CurDAG->getDataLayout(),
                  Table[Index - 1] - SelectionDAGISel::OPC_CheckChild0Type);
     return Index;
   case SelectionDAGISel::OPC_CheckCondCode:
+DEBUG_WITH_TYPE("axe", dbgs() << "  IsPredicateKnownToFail: line " << __LINE__  << '\n');
     Result = !::CheckCondCode(Table, Index, N);
     return Index;
   case SelectionDAGISel::OPC_CheckValueType:
+DEBUG_WITH_TYPE("axe", dbgs() << "  IsPredicateKnownToFail: line " << __LINE__  << '\n');
     Result = !::CheckValueType(Table, Index, N, SDISel.TLI,
                                SDISel.CurDAG->getDataLayout());
     return Index;
   case SelectionDAGISel::OPC_CheckInteger:
+DEBUG_WITH_TYPE("axe", dbgs() << "  IsPredicateKnownToFail: line " << __LINE__  << '\n');
     Result = !::CheckInteger(Table, Index, N);
     return Index;
   case SelectionDAGISel::OPC_CheckChild0Integer:
@@ -2827,13 +2844,16 @@ static unsigned IsPredicateKnownToFail(const unsigned char *Table,
   case SelectionDAGISel::OPC_CheckChild2Integer:
   case SelectionDAGISel::OPC_CheckChild3Integer:
   case SelectionDAGISel::OPC_CheckChild4Integer:
+DEBUG_WITH_TYPE("axe", dbgs() << "  IsPredicateKnownToFail: line " << __LINE__  << '\n');
     Result = !::CheckChildInteger(Table, Index, N,
                      Table[Index-1] - SelectionDAGISel::OPC_CheckChild0Integer);
     return Index;
   case SelectionDAGISel::OPC_CheckAndImm:
+DEBUG_WITH_TYPE("axe", dbgs() << "  IsPredicateKnownToFail: line " << __LINE__  << '\n');
     Result = !::CheckAndImm(Table, Index, N, SDISel);
     return Index;
   case SelectionDAGISel::OPC_CheckOrImm:
+DEBUG_WITH_TYPE("axe", dbgs() << "  IsPredicateKnownToFail: line " << __LINE__  << '\n');
     Result = !::CheckOrImm(Table, Index, N, SDISel);
     return Index;
   }
@@ -3038,6 +3058,8 @@ void SelectionDAGISel::SelectCodeCommon(SDNode *NodeToMatch,
     BuiltinOpcodes Opcode = (BuiltinOpcodes)MatcherTable[MatcherIndex++];
     switch (Opcode) {
     case OPC_Scope: {
+DEBUG_WITH_TYPE("axe", dbgs() << " SelectionDAGISel::SelectCodeCommon: line " << __LINE__ << ": Opcode " << Opcode <<
+  ", MatcherIndex: " << MatcherIndex << '\n');
       // Okay, the semantics of this operation are that we should push a scope
       // then evaluate the first child.  However, pushing a scope only to have
       // the first check fail (which then pops it) is inefficient.  If we can
@@ -3079,6 +3101,7 @@ void SelectionDAGISel::SelectCodeCommon(SDNode *NodeToMatch,
         MatcherIndex = FailIndex;
       }
 
+DEBUG_WITH_TYPE("axe", dbgs() << " SelectionDAGISel::SelectCodeCommon: line " << __LINE__ << ": FailIndex " << FailIndex << '\n');
       // If the whole scope failed to match, bail.
       if (FailIndex == 0) break;
 
