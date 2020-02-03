@@ -27,6 +27,7 @@
 #include "llvm/CodeGen/StackProtector.h"
 #include "llvm/IR/Dominators.h"
 #include "llvm/IR/Function.h"
+#include "llvm/Support/Debug.h" // axe
 
 using namespace llvm;
 
@@ -36,6 +37,7 @@ Pass *MachineFunctionPass::createPrinterPass(raw_ostream &O,
 }
 
 bool MachineFunctionPass::runOnFunction(Function &F) {
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineFunctionPass::runOnFunction\nFunction --->"; F.print(dbgs()); dbgs() << "<--- Function\n";); 
   // Do not codegen any 'available_externally' functions at all, they have
   // definitions outside the translation unit.
   if (F.hasAvailableExternallyLinkage())
@@ -43,6 +45,12 @@ bool MachineFunctionPass::runOnFunction(Function &F) {
 
   MachineModuleInfo &MMI = getAnalysis<MachineModuleInfo>();
   MachineFunction &MF = MMI.getOrCreateMachineFunction(F);
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineFunction --->\n";
+  for (MachineBasicBlock &MBB : MF) {
+    for (MachineBasicBlock::const_iterator i = MBB.begin(), ie = MBB.end(); i != ie; ++i)
+      i->dump();
+  }
+dbgs() << "<--- MachineFunction\n";);
 
   MachineFunctionProperties &MFProps = MF.getProperties();
 

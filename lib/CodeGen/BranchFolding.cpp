@@ -118,6 +118,7 @@ INITIALIZE_PASS(BranchFolderPass, DEBUG_TYPE,
                 "Control Flow Optimizer", false, false)
 
 bool BranchFolderPass::runOnMachineFunction(MachineFunction &MF) {
+DEBUG_WITH_TYPE("axe", dbgs() << "BranchFolderPass::runOnMachineFunction\n"); 
   if (skipFunction(MF.getFunction()))
     return false;
 
@@ -174,6 +175,7 @@ bool BranchFolder::OptimizeFunction(MachineFunction &MF,
                                     const TargetRegisterInfo *tri,
                                     MachineModuleInfo *mmi,
                                     MachineLoopInfo *mli, bool AfterPlacement) {
+DEBUG_WITH_TYPE("axe", dbgs() << "BranchFolder::OptimizeFunction\n"); 
   if (!tii) return false;
 
   TriedMerging.clear();

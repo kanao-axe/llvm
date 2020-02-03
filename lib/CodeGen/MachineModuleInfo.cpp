@@ -266,26 +266,32 @@ MachineModuleInfo::getMachineFunction(const Function &F) const {
 
 MachineFunction &
 MachineModuleInfo::getOrCreateMachineFunction(const Function &F) {
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineModuleInfo::getOrCreateMachineFunction: ";); 
   // Shortcut for the common case where a sequence of MachineFunctionPasses
   // all query for the same Function.
-  if (LastRequest == &F)
+  if (LastRequest == &F) {
+DEBUG_WITH_TYPE("axe", dbgs() << "LastRequest: "; LastRequest->dump();); 
     return *LastResult;
+  }
 
   auto I = MachineFunctions.insert(
       std::make_pair(&F, std::unique_ptr<MachineFunction>()));
   MachineFunction *MF;
   if (I.second) {
+DEBUG_WITH_TYPE("axe", dbgs() << "creating ...";); 
     // No pre-existing machine function, create a new one.
     const TargetSubtargetInfo &STI = *TM.getSubtargetImpl(F);
     MF = new MachineFunction(F, TM, STI, NextFnNum++, *this);
     // Update the set entry.
     I.first->second.reset(MF);
   } else {
+DEBUG_WITH_TYPE("axe", dbgs() << "getting ...";); 
     MF = I.first->second.get();
   }
 
   LastRequest = &F;
   LastResult = MF;
+DEBUG_WITH_TYPE("axe", MF->dump();); 
   return *MF;
 }
 
