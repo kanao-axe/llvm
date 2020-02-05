@@ -27,6 +27,7 @@
 #include "llvm/IR/DebugLoc.h"
 #include "llvm/MC/MCInstrDesc.h"
 #include "llvm/Target/TargetMachine.h"
+#include "llvm/Support/Debug.h" // axe
 #include <cassert>
 
 using namespace llvm;
@@ -81,6 +82,8 @@ void MipsInstrInfo::AnalyzeCondBr(const MachineInstr *Inst, unsigned Opc,
                                   MachineBasicBlock *&BB,
                                   SmallVectorImpl<MachineOperand> &Cond) const {
   assert(getAnalyzableBrOpc(Opc) && "Not an analyzable branch");
+DEBUG_WITH_TYPE("axe", dbgs() << "MipsInstrInfo::AnalyzeCondBr:  Inst: "; Inst->dump();
+  dbgs() << "  getNumExplicitOperands() : " << Inst->getNumExplicitOperands() << ", getNumOperands(): " << Inst->getNumOperands() << '\n';);
   int NumOp = Inst->getNumExplicitOperands();
 
   // for both int and fp branches, the last explicit operand is the
@@ -97,6 +100,7 @@ bool MipsInstrInfo::analyzeBranch(MachineBasicBlock &MBB,
                                   MachineBasicBlock *&FBB,
                                   SmallVectorImpl<MachineOperand> &Cond,
                                   bool AllowModify) const {
+DEBUG_WITH_TYPE("axe", dbgs() << "MipsInstrInfo::analyzeBranch " << __LINE__ << '\n'); 
   SmallVector<MachineInstr*, 2> BranchInstrs;
   BranchType BT = analyzeBranch(MBB, TBB, FBB, Cond, AllowModify, BranchInstrs);
 
@@ -106,6 +110,7 @@ bool MipsInstrInfo::analyzeBranch(MachineBasicBlock &MBB,
 void MipsInstrInfo::BuildCondBr(MachineBasicBlock &MBB, MachineBasicBlock *TBB,
                                 const DebugLoc &DL,
                                 ArrayRef<MachineOperand> Cond) const {
+DEBUG_WITH_TYPE("axe", dbgs() << "MipsInstrInfo::BuildCondBr: MBB: "; MBB.dump(); dbgs() << " TBB: "; TBB->dump();); 
   unsigned Opc = Cond[0].getImm();
   const MCInstrDesc &MCID = get(Opc);
   MachineInstrBuilder MIB = BuildMI(&MBB, DL, MCID);
@@ -192,6 +197,8 @@ MipsInstrInfo::BranchType MipsInstrInfo::analyzeBranch(
     MachineBasicBlock &MBB, MachineBasicBlock *&TBB, MachineBasicBlock *&FBB,
     SmallVectorImpl<MachineOperand> &Cond, bool AllowModify,
     SmallVectorImpl<MachineInstr *> &BranchInstrs) const {
+DEBUG_WITH_TYPE("axe", dbgs() << "MipsInstrInfo::analyzeBranch " << __LINE__ << "\n  instructions:\n");
+DEBUG_WITH_TYPE("axe", for (MachineBasicBlock::const_iterator i = MBB.begin(), ie = MBB.end(); i != ie; ++i) { dbgs() << "  "; i->dump(); }); 
   MachineBasicBlock::reverse_iterator I = MBB.rbegin(), REnd = MBB.rend();
 
   // Skip all the debug instructions.
@@ -240,6 +247,8 @@ MipsInstrInfo::BranchType MipsInstrInfo::analyzeBranch(
       return BT_Uncond;
     }
 
+DEBUG_WITH_TYPE("axe", dbgs() << "MipsInstrInfo::analyzeBranch " << __LINE__ << ": calling AnalyzeCondBr for last inst: ";
+  LastInst->dump(););
     // Conditional branch
     AnalyzeCondBr(LastInst, LastOpc, TBB, Cond);
     return BT_Cond;
@@ -270,6 +279,8 @@ MipsInstrInfo::BranchType MipsInstrInfo::analyzeBranch(
   if (!LastInst->isUnconditionalBranch())
     return BT_None;
 
+DEBUG_WITH_TYPE("axe", dbgs() << "MipsInstrInfo::analyzeBranch " << __LINE__ << ": calling AnalyzeCondBr for second last inst: ";
+  SecondLastInst->dump(););
   AnalyzeCondBr(SecondLastInst, SecondLastOpc, TBB, Cond);
   FBB = LastInst->getOperand(0).getMBB();
 
