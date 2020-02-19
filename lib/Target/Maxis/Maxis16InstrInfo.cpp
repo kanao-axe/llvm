@@ -150,6 +150,7 @@ bool Maxis16InstrInfo::expandPostRAPseudo(MachineInstr &MI) const {
 /// GetOppositeBranchOpc - Return the inverse of the specified
 /// opcode, e.g. turning BEQ to BNE.
 unsigned Maxis16InstrInfo::getOppositeBranchOpc(unsigned Opc) const {
+DEBUG_WITH_TYPE("axe", dbgs() << "Maxis16InstrInfo::getOppositeBranchOpc: Opc: " << Opc << '\n');
   switch (Opc) {
   case Maxis::BeqzRxImmX16: return Maxis::BnezRxImmX16;
   case Maxis::BnezRxImmX16: return Maxis::BeqzRxImmX16;

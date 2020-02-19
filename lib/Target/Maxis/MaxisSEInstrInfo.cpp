@@ -423,6 +423,7 @@ bool MaxisSEInstrInfo::expandPostRAPseudo(MachineInstr &MI) const {
 /// getOppositeBranchOpc - Return the inverse of the specified
 /// opcode, e.g. turning BEQ to BNE.
 unsigned MaxisSEInstrInfo::getOppositeBranchOpc(unsigned Opc) const {
+DEBUG_WITH_TYPE("axe", dbgs() << "MaxisSEInstrInfo::getOppositeBranchOpc: Opc: " << Opc << '\n');
   switch (Opc) {
   default:           llvm_unreachable("Illegal opcode!");
   case Maxis::BEQ:    return Maxis::BNE;

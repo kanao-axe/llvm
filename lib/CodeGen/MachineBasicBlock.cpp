@@ -477,11 +477,14 @@ void MachineBasicBlock::updateTerminator() {
 
       // Finally update the unconditional successor to be reached via a branch
       // if it would not be reached by fallthrough.
-      if (!isLayoutSuccessor(TBB))
+      if (!isLayoutSuccessor(TBB)) {
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::updateTerminator " << __LINE__ << ": calling insertBranch ... (*this): "; dump();); 
         TII->insertBranch(*this, TBB, nullptr, Cond, DL);
+	  }
     }
     return;
   }
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::updateTerminator " << __LINE__ << ": Cond[0]: " << Cond[0].getImm() << '\n'); 
 
   if (FBB) {
     // The block has a non-fallthrough conditional branch. If one of its
@@ -491,10 +494,14 @@ void MachineBasicBlock::updateTerminator() {
       if (TII->reverseBranchCondition(Cond))
         return;
       TII->removeBranch(*this);
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::updateTerminator " << __LINE__ << ": calling insertBranch ... (*this): "; dump();); 
       TII->insertBranch(*this, FBB, nullptr, Cond, DL);
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::updateTerminator " << __LINE__ << ": returned from insertBranch (*this): "; dump();); 
     } else if (isLayoutSuccessor(FBB)) {
       TII->removeBranch(*this);
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::updateTerminator " << __LINE__ << ": calling insertBranch ... (*this): "; dump();); 
       TII->insertBranch(*this, TBB, nullptr, Cond, DL);
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::updateTerminator " << __LINE__ << ": returned from insertBranch (*this): "; dump();); 
     }
     return;
   }
@@ -520,8 +527,11 @@ void MachineBasicBlock::updateTerminator() {
 
       // Finally update the unconditional successor to be reached via a branch if
       // it would not be reached by fallthrough.
-      if (!isLayoutSuccessor(TBB))
+      if (!isLayoutSuccessor(TBB)) {
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::updateTerminator " << __LINE__ << ": calling insertBranch ... (*this): "; dump();); 
         TII->insertBranch(*this, TBB, nullptr, Cond, DL);
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::updateTerminator " << __LINE__ << ": returned from insertBranch (*this): "; dump();); 
+	  }
       return;
     }
 
@@ -530,7 +540,9 @@ void MachineBasicBlock::updateTerminator() {
     // change the conditional branch into unconditional branch.
     TII->removeBranch(*this);
     Cond.clear();
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::updateTerminator " << __LINE__ << ": calling insertBranch ... (*this): "; dump();); 
     TII->insertBranch(*this, TBB, nullptr, Cond, DL);
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::updateTerminator " << __LINE__ << ": returned from insertBranch (*this): "; dump();); 
     return;
   }
 
@@ -539,14 +551,24 @@ void MachineBasicBlock::updateTerminator() {
     if (TII->reverseBranchCondition(Cond)) {
       // We can't reverse the condition, add an unconditional branch.
       Cond.clear();
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::updateTerminator " << __LINE__ <<
+  ": calling insertBranch ... Cond[0]: " << Cond[0].getImm() << " (*this): "; dump();); 
       TII->insertBranch(*this, FallthroughBB, nullptr, Cond, DL);
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::updateTerminator " << __LINE__ << ": returned from insertBranch (*this): "; dump();); 
       return;
     }
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::updateTerminator " << __LINE__ << ": Cond[0]: " << Cond[0].getImm() << '\n'); 
     TII->removeBranch(*this);
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::updateTerminator " << __LINE__ <<
+  ": calling insertBranch ... Cond[0]: " << Cond[0].getImm() << " (*this): "; dump();); 
     TII->insertBranch(*this, FallthroughBB, nullptr, Cond, DL);
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::updateTerminator " << __LINE__ << ": returned from insertBranch (*this): "; dump();); 
   } else if (!isLayoutSuccessor(FallthroughBB)) {
     TII->removeBranch(*this);
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::updateTerminator " << __LINE__ <<
+  ": calling insertBranch ... Cond[0]: " << Cond[0].getImm() << " (*this): "; dump();); 
     TII->insertBranch(*this, TBB, FallthroughBB, Cond, DL);
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::updateTerminator " << __LINE__ << ": returned from insertBranch (*this): "; dump();); 
   }
 }
 
@@ -837,7 +859,9 @@ MachineBasicBlock *MachineBasicBlock::SplitCriticalEdge(MachineBasicBlock *Succ,
       Terminators.push_back(&*I);
   }
 
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::SplitCriticalEdge " << __LINE__ << ": calling updateTerminator ...\n"); 
   updateTerminator();
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::SplitCriticalEdge " << __LINE__ << ": retuned from updateTerminator\n"); 
 
   if (Indexes) {
     SmallVector<MachineInstr*, 4> NewTerminators;
@@ -857,6 +881,7 @@ MachineBasicBlock *MachineBasicBlock::SplitCriticalEdge(MachineBasicBlock *Succ,
   if (!NMBB->isLayoutSuccessor(Succ)) {
     SmallVector<MachineOperand, 4> Cond;
     const TargetInstrInfo *TII = getParent()->getSubtarget().getInstrInfo();
+DEBUG_WITH_TYPE("axe", dbgs() << "MachineBasicBlock::SplitCriticalEdge " << __LINE__ << ": calling insertBranch ...\n"); 
     TII->insertBranch(*NMBB, Succ, nullptr, Cond, DL);
 
     if (Indexes) {

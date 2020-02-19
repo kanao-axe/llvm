@@ -82,7 +82,7 @@ void MipsInstrInfo::AnalyzeCondBr(const MachineInstr *Inst, unsigned Opc,
                                   MachineBasicBlock *&BB,
                                   SmallVectorImpl<MachineOperand> &Cond) const {
   assert(getAnalyzableBrOpc(Opc) && "Not an analyzable branch");
-DEBUG_WITH_TYPE("axe", dbgs() << "MipsInstrInfo::AnalyzeCondBr:  Inst: "; Inst->dump();
+DEBUG_WITH_TYPE("axe", dbgs() << "MipsInstrInfo::AnalyzeCondBr:  Opc: " << Opc << ", Inst: Opc: " << Inst->getOpcode() << ' '; Inst->dump();
   dbgs() << "  getNumExplicitOperands() : " << Inst->getNumExplicitOperands() << ", getNumOperands(): " << Inst->getNumOperands() << '\n';);
   int NumOp = Inst->getNumExplicitOperands();
 
@@ -112,8 +112,11 @@ void MipsInstrInfo::BuildCondBr(MachineBasicBlock &MBB, MachineBasicBlock *TBB,
                                 ArrayRef<MachineOperand> Cond) const {
 DEBUG_WITH_TYPE("axe", dbgs() << "MipsInstrInfo::BuildCondBr: MBB: "; MBB.dump(); dbgs() << " TBB: "; TBB->dump();); 
   unsigned Opc = Cond[0].getImm();
+DEBUG_WITH_TYPE("axe", dbgs() << "MipsInstrInfo::BuildCondBr: Cond[0]: Opc: " << Opc << ' '; Cond[0].dump(););
   const MCInstrDesc &MCID = get(Opc);
   MachineInstrBuilder MIB = BuildMI(&MBB, DL, MCID);
+DEBUG_WITH_TYPE("axe", dbgs() << "MipsInstrInfo::BuildCondBr: MIB.getInstr(): " << MIB.getInstr()->getOpcode() << ' ';
+  MIB.getInstr()->dump(););
 
   for (unsigned i = 1; i < Cond.size(); ++i) {
     assert((Cond[i].isImm() || Cond[i].isReg()) &&
@@ -121,6 +124,7 @@ DEBUG_WITH_TYPE("axe", dbgs() << "MipsInstrInfo::BuildCondBr: MBB: "; MBB.dump()
     MIB.add(Cond[i]);
   }
   MIB.addMBB(TBB);
+DEBUG_WITH_TYPE("axe", dbgs() << "MipsInstrInfo::BuildCondBr done: MBB: "; MBB.dump(); dbgs() << " TBB: "; TBB->dump();); 
 }
 
 unsigned MipsInstrInfo::insertBranch(MachineBasicBlock &MBB,
@@ -129,6 +133,7 @@ unsigned MipsInstrInfo::insertBranch(MachineBasicBlock &MBB,
                                      ArrayRef<MachineOperand> Cond,
                                      const DebugLoc &DL,
                                      int *BytesAdded) const {
+DEBUG_WITH_TYPE("axe", dbgs() << "MipsInstrInfo::insertBranch: ");
   // Shouldn't be a fall through.
   assert(TBB && "insertBranch must not be told to insert a fallthrough");
   assert(!BytesAdded && "code size not handled");
@@ -143,6 +148,7 @@ unsigned MipsInstrInfo::insertBranch(MachineBasicBlock &MBB,
 
   // Two-way Conditional branch.
   if (FBB) {
+DEBUG_WITH_TYPE("axe", dbgs() << __LINE__ << " Two-way Conditional branch, calling BuildCondBr ... Cond[0]: " << Cond[0].getImm() << '\n'); 
     BuildCondBr(MBB, TBB, DL, Cond);
     BuildMI(&MBB, DL, get(UncondBrOpc)).addMBB(FBB);
     return 2;
@@ -150,10 +156,15 @@ unsigned MipsInstrInfo::insertBranch(MachineBasicBlock &MBB,
 
   // One way branch.
   // Unconditional branch.
-  if (Cond.empty())
+  if (Cond.empty()) {
+DEBUG_WITH_TYPE("axe", dbgs() << __LINE__ << " One unconditional way branch, calling BuildMI ...\n"); 
     BuildMI(&MBB, DL, get(UncondBrOpc)).addMBB(TBB);
-  else // Conditional branch.
+  }
+  else { // Conditional branch.
+DEBUG_WITH_TYPE("axe", dbgs() << __LINE__ << " One way branch, calling BuildCondBr ... Cond[0]: " << Cond[0].getImm() << '\n'); 
     BuildCondBr(MBB, TBB, DL, Cond);
+  }
+DEBUG_WITH_TYPE("axe", dbgs() << "MipsInstrInfo::insertBranch: done: "; MBB.dump(); if (TBB) TBB->dump());
   return 1;
 }
 
@@ -189,6 +200,8 @@ bool MipsInstrInfo::reverseBranchCondition(
     SmallVectorImpl<MachineOperand> &Cond) const {
   assert( (Cond.size() && Cond.size() <= 3) &&
           "Invalid Mips branch condition!");
+DEBUG_WITH_TYPE("axe", dbgs() << "MipsInstrInfo::reverseBranchCondition: Cond[0]: " << Cond[0].getImm() <<
+  ", Opposite: " << getOppositeBranchOpc(Cond[0].getImm()) << '\n');
   Cond[0].setImm(getOppositeBranchOpc(Cond[0].getImm()));
   return false;
 }
