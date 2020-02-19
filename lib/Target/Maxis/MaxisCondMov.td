@@ -109,7 +109,7 @@ multiclass MovnPats<RegisterClass CRC, RegisterClass DRC, Instruction MOVNInst,
 
 // Instantiation of instructions.
 def MOVZ_I_I : MMRel, CMov_I_I_FT<"movz", GPR32Opnd, GPR32Opnd, II_MOVZ>,
-               ADD_FM<0, 0xa>, INSN_MAXIS4_32_NOT_32R6_64R6 /* ISA_MAXIS1_NOT_4_32 */;
+               ADD_FM<0, 0xa>, /* INSN_MAXIS4_32_NOT_32R6_64R6 */ ISA_MAXIS1_NOT_4_32;
 
 let isCodeGenOnly = 1 in {
   def MOVZ_I_I64   : CMov_I_I_FT<"movz", GPR32Opnd, GPR64Opnd, II_MOVZ>,
@@ -201,14 +201,14 @@ let DecoderNamespace = "MaxisFP64" in {
 
 // Instantiation of conditional move patterns.
 defm : MovzPats0<GPR32, GPR32, MOVZ_I_I, SLT, SLTu, SLTi/*, SLTiu*/>,
-       INSN_MAXIS4_32_NOT_32R6_64R6 /* ISA_MAXIS1_NOT_4_32 */;
-defm : MovzPats1<GPR32, GPR32, MOVZ_I_I, XOR>, INSN_MAXIS4_32_NOT_32R6_64R6 /* ISA_MAXIS1_NOT_4_32 */;
-defm : MovzPats2<GPR32, GPR32, MOVZ_I_I, XORi>, INSN_MAXIS4_32_NOT_32R6_64R6 /* ISA_MAXIS1_NOT_4_32 */;
+       /* INSN_MAXIS4_32_NOT_32R6_64R6 */ ISA_MAXIS1_NOT_4_32;
+defm : MovzPats1<GPR32, GPR32, MOVZ_I_I, XOR>, /* INSN_MAXIS4_32_NOT_32R6_64R6 */ ISA_MAXIS1_NOT_4_32;
+defm : MovzPats2<GPR32, GPR32, MOVZ_I_I, XORi>, /* INSN_MAXIS4_32_NOT_32R6_64R6 */ ISA_MAXIS1_NOT_4_32;
 
 defm : MovzPats0<GPR32, GPR64, MOVZ_I_I64, SLT, SLTu, SLTi/*, SLTiu*/>,
        ISA_MAXIS1_NOT_4_32, GPR_64;
 defm : MovzPats0<GPR64, GPR32, MOVZ_I_I, SLT64, SLTu64, SLTi64/*, SLTiu64*/>,
-       INSN_MAXIS4_32_NOT_32R6_64R6 /* ISA_MAXIS1_NOT_4_32 */, GPR_64;
+       /* INSN_MAXIS4_32_NOT_32R6_64R6 */ ISA_MAXIS1_NOT_4_32, GPR_64;
 defm : MovzPats0<GPR64, GPR64, MOVZ_I_I64, SLT64, SLTu64, SLTi64/*, SLTiu64*/>,
        ISA_MAXIS1_NOT_4_32, GPR_64;
 defm : MovzPats1<GPR32, GPR64, MOVZ_I_I64, XOR>,
