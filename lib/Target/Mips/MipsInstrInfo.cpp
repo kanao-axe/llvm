@@ -165,6 +165,13 @@ DEBUG_WITH_TYPE("axe", dbgs() << __LINE__ << " One way branch, calling BuildCond
     BuildCondBr(MBB, TBB, DL, Cond);
   }
 DEBUG_WITH_TYPE("axe", dbgs() << "MipsInstrInfo::insertBranch: done: "; MBB.dump(); if (TBB) TBB->dump());
+  MachineBasicBlock::reverse_iterator I = MBB.rbegin(), REnd = MBB.rend();
+  while (I != REnd && I->isDebugValue()) ++I;
+  MachineInstr *LastInst = &*I;
+DEBUG_WITH_TYPE("axe",
+  dbgs() << "  LastInst: "; LastInst->dump();
+  dbgs() << "  getNumExplicitOperands(): " << LastInst->getNumExplicitOperands() << ", getNumOperands(): " << LastInst->getNumOperands() << '\n';
+);
   return 1;
 }
 
